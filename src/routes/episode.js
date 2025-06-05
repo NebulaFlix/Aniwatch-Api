@@ -10,41 +10,41 @@ const ACCEPT_ENCODING_HEADER = "gzip, deflate, br";
 
 episode.use(cors());
 
-episode.get('/episode/:id', async ( req, res)=>{
-    const episodeanime = req.params.id.match(/\d+/);
+episode.get('/episode/:id', async (req, res) => {
+    const episodeanime = req.params.id.match(/\d+$/)[0];
     const episodelink = `https://aniwatchtv.to/ajax/v2/episode/list/${episodeanime}`;
 
     try {
         const episodewanna = await axios.get(episodelink, {
-            headers:{
+            headers: {
                 'User-Agent': USER_AGENT,
-                "Accept-Encoding": ACCEPT_ENCODING_HEADER,
+                'Accept-Encoding': ACCEPT_ENCODING_HEADER,
             }
         });
+
         const episodey = episodewanna?.data?.html;
-    
         const $ = cheerio.load(episodey);
-    
+
         const episodetown = [];
-    
-        $('.ss-list .ssl-item.ep-item').each(function(index, element) {
-            const name = $(element).find('.e-dynamic-name').text().trim();
-            const order = $(element).find('.ssli-order').text().trim();
-            const epId = $(element).attr('href').split('/watch/')[1];
-        
+
+        $('.ss-list .ssl-item.ep-item').each(function () {
+            const name = $(this).find('.e-dynamic-name').text().trim();
+            const order = $(this).find('.ssli-order').text().trim();
+            const epId = $(this).attr('href').split('/watch/')[1];
+
             episodetown.push({
                 order,
                 name,
                 epId,
             });
         });
-        
-    
-        res.json({episodetown});
-    
+
+        res.json({ episodetown });
+
     } catch (error) {
         console.log('new error bhai', error);
+        res.status(500).json({ error: 'Failed to fetch episode data' });
     }
-})
+});
 
 module.exports = episode;
